@@ -4,7 +4,7 @@
 
 <p>The project is structured the way an analyst would actually be asked to work: a stakeholder arrives with a question, the SQL answers it, and the dashboard makes the answer readable by someone who does not write SQL.</p>
 
-<p><strong>Live dashboards:</strong> <a href="[ADD_YOUR_TABLEAU_PUBLIC_LINK_HERE](https://public.tableau.com/views/RetailSalesAnalysis_17911997893050/RevenueOverview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)">View on Tableau Public</a></p>
+<p><strong>Live dashboards:</strong> <a href="https://public.tableau.com/views/RetailSalesAnalysis_17911997893050/RevenueOverview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link">View on Tableau Public</a></p>
 
 <hr>
 
