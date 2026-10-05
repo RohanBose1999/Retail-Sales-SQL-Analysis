@@ -1,4 +1,4 @@
-<h1 id="top">Retail Sales Analysis: SQL to Dashboard</h1>
+<h1>Retail Sales Analysis: SQL to Dashboard</h1>
 
 <p>An end-to-end analytics project built on a four-year retail transaction dataset. Raw CSV is imported and cleaned in MySQL, analysed through seven SQL scripts answering five sets of business questions, and visualised in five Tableau dashboards.</p>
 
@@ -8,27 +8,27 @@
 
 <hr>
 
-<h2 id="contents">Contents</h2>
+<h2>Contents</h2>
 
 <ul>
-  <li><a href="#demonstrates">What this project demonstrates</a></li>
-  <li><a href="#dataset">The dataset</a></li>
-  <li><a href="#structure">Repository structure</a></li>
-  <li><a href="#stage-1">Stage 1: Building the database</a></li>
-  <li><a href="#stage-2">Stage 2: Data quality and cleaning</a></li>
-  <li><a href="#question-1">Business question 1: Revenue overview</a></li>
-  <li><a href="#question-2">Business question 2: Trends over time</a></li>
-  <li><a href="#question-3">Business question 3: Customer behaviour</a></li>
-  <li><a href="#question-4">Business question 4: Operations and quality</a></li>
-  <li><a href="#question-5">Business question 5: Product rankings</a></li>
-  <li><a href="#techniques">Techniques used</a></li>
-  <li><a href="#reproduce">How to reproduce</a></li>
+  <li><a href="#what-this-project-demonstrates">What this project demonstrates</a></li>
+  <li><a href="#the-dataset">The dataset</a></li>
+  <li><a href="#repository-structure">Repository structure</a></li>
+  <li><a href="#stage-1-building-the-database">Stage 1: Building the database</a></li>
+  <li><a href="#stage-2-data-quality-and-cleaning">Stage 2: Data quality and cleaning</a></li>
+  <li><a href="#business-question-1-revenue-overview">Business question 1: Revenue overview</a></li>
+  <li><a href="#business-question-2-trends-over-time">Business question 2: Trends over time</a></li>
+  <li><a href="#business-question-3-customer-behaviour">Business question 3: Customer behaviour</a></li>
+  <li><a href="#business-question-4-operations-and-quality">Business question 4: Operations and quality</a></li>
+  <li><a href="#business-question-5-product-rankings">Business question 5: Product rankings</a></li>
+  <li><a href="#techniques-used">Techniques used</a></li>
+  <li><a href="#how-to-reproduce">How to reproduce</a></li>
   <li><a href="#limitations">Limitations</a></li>
 </ul>
 
 <hr>
 
-<h2 id="demonstrates">What this project demonstrates</h2>
+<h2>What this project demonstrates</h2>
 
 <table>
   <thead>
@@ -45,11 +45,11 @@
   </tbody>
 </table>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="dataset">The dataset</h2>
+<h2>The dataset</h2>
 
 <p>A synthetic retail transaction dataset of <strong>19,542 orders</strong> spanning <strong>January 2022 to December 2025</strong>.</p>
 
@@ -79,13 +79,14 @@
 
 <p>All SQL, analysis and dashboards in this repository are my own work.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="structure">Repository structure</h2>
+<h2>Repository structure</h2>
 
-<pre><code>.
+```
+.
 ├── README.md
 ├── sales_data.csv                          # raw data, as received
 ├── sales_final.csv                         # cleaned export, feeds Tableau
@@ -103,13 +104,13 @@
     ├── customer_behaviour.jpg
     ├── operations_quality.jpg
     └── product_rankings.jpg
-</code></pre>
+```
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="stage-1">Stage 1: Building the database</h2>
+<h2>Stage 1: Building the database</h2>
 
 <p><strong>Script:</strong> 01_Creating_Database_And_Importing.sql</p>
 
@@ -119,7 +120,8 @@
 
 <p>Both are handled by loading those fields into user variables first, then transforming them on the way in:</p>
 
-<pre><code>LOAD DATA LOCAL INFILE '/path/to/sales_data.csv'
+```sql
+LOAD DATA LOCAL INFILE '/path/to/sales_data.csv'
 INTO TABLE sales
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
@@ -129,40 +131,42 @@ IGNORE 1 ROWS
 SET order_date = STR_TO_DATE(@order_date, '%c/%e/%y'),
     price = NULLIF(@price, ''),
     units = NULLIF(@units, '');
-</code></pre>
+```
 
 <p>NULLIF(@price, '') converts an empty string to NULL and passes everything else through unchanged. This is the difference between 781 missing values and 781 silent zeros.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="stage-2">Stage 2: Data quality and cleaning</h2>
+<h2>Stage 2: Data quality and cleaning</h2>
 
 <p><strong>Script:</strong> 02_Data_Quality.sql</p>
 
-<h3 id="null-audit">Auditing every column for nulls</h3>
+<h3>Auditing every column for nulls</h3>
 
 <p>Rather than checking columns one at a time, a single pass reports all twelve:</p>
 
-<pre><code>SELECT
+```sql
+SELECT
     SUM(order_id IS NULL)         AS null_order_id,
     SUM(order_date IS NULL)       AS null_order_date,
     SUM(price IS NULL)            AS null_price,
     SUM(units IS NULL)            AS null_units,
     -- ... remaining columns
 FROM sales;
-</code></pre>
+```
 
 <p>This relies on price IS NULL evaluating to 1 or 0, so SUM() counts them. Note that COUNT() would not work here: COUNT(price IS NULL) returns the total row count, because both 1 and 0 are non-null values.</p>
 
 <p><strong>Result:</strong> 781 missing prices (4.0%) and 683 missing units (3.5%). Every other column complete.</p>
 
-<h3 id="imputation">Imputing the missing values</h3>
+<h3>Imputing the missing values</h3>
 
 <p>Missing prices and units are filled with the <strong>mean for that specific product</strong>, not the overall mean. A missing Smartwatch price filled with the catalogue average would be wrong by an order of magnitude.</p>
 
-<pre><code>CREATE TABLE sales_cleaned AS
+```sql
+CREATE TABLE sales_cleaned AS
 SELECT
     s.order_id, s.order_date, s.customer_id, s.customer_segment,
     s.region, s.category, s.product_name,
@@ -176,9 +180,9 @@ JOIN (
     FROM sales
     GROUP BY product_name
 ) p ON s.product_name = p.product_name;
-</code></pre>
+```
 
-<h3 id="validation">Validating the imputation</h3>
+<h3>Validating the imputation</h3>
 
 <p>Filling 1,464 values is only safe if it does not distort the data. Category-level averages are compared before and after:</p>
 
@@ -197,7 +201,7 @@ JOIN (
 
 <p>The largest shift is a quarter of one percent, and average units are unchanged across all five categories. The imputation is safe to carry forward.</p>
 
-<h3 id="dirty-data">A dirty data problem worth catching</h3>
+<h3>A dirty data problem worth catching</h3>
 
 <p>A routine SELECT DISTINCT order_status returned four values rather than three, with "Delivered" appearing twice. The two looked identical on screen.</p>
 
@@ -207,26 +211,27 @@ JOIN (
 
 <p>This is worth drawing attention to because it is the class of error that does not announce itself. Nothing errors, no row count looks wrong, and every downstream figure is quietly incorrect.</p>
 
-<h3 id="derive-revenue">Deriving revenue</h3>
+<h3>Deriving revenue</h3>
 
 <p>With the data clean, sales_final is created with the derived revenue column:</p>
 
-<pre><code>CREATE TABLE sales_final AS
+```sql
+CREATE TABLE sales_final AS
 SELECT
     order_id, order_date, customer_id, customer_segment, region,
     category, product_name, price, units, discount_pct,
     payment_method, order_status,
     ROUND(((price * units) * (1 - (discount_pct / 100))), 2) AS revenue
 FROM sales_cleaned;
-</code></pre>
+```
 
 <p><strong>19,542 rows, zero nulls, three clean order statuses.</strong> This table feeds every subsequent script and the Tableau workbook.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="question-1">Business question 1: Revenue overview</h2>
+<h2>Business question 1: Revenue overview</h2>
 
 <blockquote>
   <p><em>"How much money are we making, and where does it come from?"</em></p>
@@ -234,26 +239,28 @@ FROM sales_cleaned;
 
 <p><strong>Script:</strong> 03_Revenue_Overview.sql</p>
 
-<h3 id="q1-sql">The SQL</h3>
+<h3>The SQL</h3>
 
 <p>The central technique here is <strong>conditional aggregation</strong>: splitting one measure into several by wrapping a CASE inside the SUM. This answers "how much did we book, and how much did we keep" in a single pass over the table.</p>
 
-<pre><code>SELECT
+```sql
+SELECT
     ROUND(SUM(revenue), 2) AS gross_revenue,
     ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN revenue ELSE 0 END), 2) AS kept_revenue,
-    ROUND(SUM(CASE WHEN order_status &lt;&gt; 'Delivered' THEN revenue ELSE 0 END), 2) AS lost_revenue
+    ROUND(SUM(CASE WHEN order_status <> 'Delivered' THEN revenue ELSE 0 END), 2) AS lost_revenue
 FROM sales_final;
-</code></pre>
+```
 
 <p>The same pattern is then applied with a GROUP BY across region, category, customer segment and product. A CTE holds the aggregates so the loss percentage can be computed from them without repeating the CASE expressions:</p>
 
-<pre><code>WITH region_wise AS (
+```sql
+WITH region_wise AS (
     SELECT
         region,
         COUNT(*) AS order_count,
         ROUND(SUM(revenue), 2) AS gross_revenue,
         ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN revenue ELSE 0 END), 2) AS kept_revenue,
-        ROUND(SUM(CASE WHEN order_status &lt;&gt; 'Delivered' THEN revenue ELSE 0 END), 2) AS lost_revenue
+        ROUND(SUM(CASE WHEN order_status <> 'Delivered' THEN revenue ELSE 0 END), 2) AS lost_revenue
     FROM sales_final
     GROUP BY region
 )
@@ -261,9 +268,9 @@ SELECT *,
        ROUND((lost_revenue / gross_revenue) * 100, 2) AS lost_pct
 FROM region_wise
 ORDER BY kept_revenue DESC;
-</code></pre>
+```
 
-<h3 id="q1-findings">The findings</h3>
+<h3>The findings</h3>
 
 <p><strong>$2,525,316 booked, $2,141,913 kept, $383,404 lost.</strong> The 15.18% loss rate is the single most important number in the dataset: roughly one pound in every seven booked as a sale is subsequently reversed. Any forecast built on gross revenue overstates realised income by about 15%.</p>
 
@@ -273,17 +280,17 @@ ORDER BY kept_revenue DESC;
 
 <p><strong>Wholesale dominates despite being the smallest segment by volume.</strong> It places 4,022 orders (21% of the total) yet generates $1,054,134, which is 49% of the business and more than Retail and Online combined. Average order value explains it: roughly $297 against $79 for Retail and $82 for Online.</p>
 
-<h3 id="q1-dashboard">The dashboard</h3>
+<h3>The dashboard</h3>
 
 <p><img src="images/revenue_overview.jpg" alt="Revenue Overview dashboard"></p>
 
 <p>The KPI strip gives the headline figures. The three bar charts break revenue down by region, category and segment, with colour carrying a second measure in each case: return rate for categories, order count for regions, average order value for segments. The product ranking at left is coloured by category, which makes the volume-versus-value story visible without a word of explanation, since Grocery items scatter through the middle of the list rather than clustering at the bottom.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="question-2">Business question 2: Trends over time</h2>
+<h2>Business question 2: Trends over time</h2>
 
 <blockquote>
   <p><em>"Is the business growing, and is there a pattern to when we sell?"</em></p>
@@ -291,11 +298,12 @@ ORDER BY kept_revenue DESC;
 
 <p><strong>Script:</strong> 04_Trends_Over_Time.sql</p>
 
-<h3 id="q2-sql">The SQL</h3>
+<h3>The SQL</h3>
 
 <p>Three different time grains answer three different questions. The year-over-year growth rate uses LAG() to pull the previous year's value onto the current row, which is the window-function equivalent of a self-join:</p>
 
-<pre><code>WITH yearly_change AS (
+```sql
+WITH yearly_change AS (
     SELECT
         YEAR(order_date) AS order_year,
         ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN revenue ELSE 0 END), 2) AS kept_revenue
@@ -312,22 +320,23 @@ SELECT *,
        ROUND(((kept_revenue - last_revenue) / last_revenue) * 100, 2) AS pct_change
 FROM previous_year
 ORDER BY order_year;
-</code></pre>
+```
 
 <p>2022 returns NULL for pct_change because there is no prior year. That is the correct output, not a gap to be papered over.</p>
 
 <p>Seasonality needs a different grain again. Grouping by MONTH() rather than by year-month collapses all four Januaries into one row, which strips out growth and leaves only the calendar pattern:</p>
 
-<pre><code>SELECT
+```sql
+SELECT
     MONTH(order_date) AS month_number,
     MONTHNAME(order_date) AS month_name,
     ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN revenue ELSE 0 END), 2) AS kept_revenue
 FROM sales_final
 GROUP BY month_number, month_name
 ORDER BY month_number;
-</code></pre>
+```
 
-<h3 id="q2-findings">The findings</h3>
+<h3>The findings</h3>
 
 <p><strong>2023 was the only contraction, and it was severe.</strong> Revenue fell 16.66% to $434,525, driven by a slump running from April to August. April 2023 took $22,827 against $35,901 the month before, and the figure stayed below $33,000 for five consecutive months before recovering from September.</p>
 
@@ -337,17 +346,17 @@ ORDER BY month_number;
 
 <p><strong>December leads in every year without exception,</strong> at $268,286 across the four years against November's $215,704 and February's $146,343. After the top two the ranking flattens sharply: months three through eleven sit between $157,063 and $178,672, a spread too narrow to read as a genuine ordering. The usable signal is a November and December peak against an otherwise level year.</p>
 
-<h3 id="q2-dashboard">The dashboard</h3>
+<h3>The dashboard</h3>
 
 <p><img src="images/trends_over_time.jpg" alt="Trends Over Time dashboard"></p>
 
 <p>The monthly line across all 48 months is the centrepiece, with the April to August 2023 slump shaded and annotated so the event is marked rather than left for the reader to spot. The yearly chart below shows the V-shape of the dip and recovery with growth percentages attached, and the seasonality chart holds months in calendar order so the shape of the year is visible rather than a ranking.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="question-3">Business question 3: Customer behaviour</h2>
+<h2>Business question 3: Customer behaviour</h2>
 
 <blockquote>
   <p><em>"Who are our customers, and how much do we depend on any of them?"</em></p>
@@ -355,11 +364,12 @@ ORDER BY month_number;
 
 <p><strong>Script:</strong> 05_Customer_Behaviour.sql</p>
 
-<h3 id="q3-sql">The SQL</h3>
+<h3>The SQL</h3>
 
 <p>The concentration analysis is the most technically involved query in the project. It chains two window functions: a running total ordered by revenue, divided by the grand total across all customers.</p>
 
-<pre><code>WITH cust AS (
+```sql
+WITH cust AS (
     SELECT
         customer_id,
         COUNT(*) AS order_count,
@@ -378,13 +388,14 @@ SELECT
           / SUM(kept_revenue) OVER () * 100, 2) AS cumulative_pct
 FROM cust
 ORDER BY kept_revenue DESC;
-</code></pre>
+```
 
 <p>The two SUM() OVER clauses do different jobs. With ORDER BY it accumulates down the ranked list; with an empty OVER () it returns the grand total. Dividing one by the other gives the share of revenue held by the top N customers, readable directly off any row.</p>
 
 <p>Purchasing breadth and customer lifespan use two-level aggregation: aggregate once to get a per-customer value, then aggregate again across those results.</p>
 
-<pre><code>WITH cust AS (
+```sql
+WITH cust AS (
     SELECT
         customer_id,
         COUNT(DISTINCT category) AS categories_bought,
@@ -399,11 +410,11 @@ SELECT
 FROM cust
 GROUP BY categories_bought
 ORDER BY categories_bought;
-</code></pre>
+```
 
 <p>COUNT(*) in the outer query counts customers rather than orders, purely because of what the CTE handed it.</p>
 
-<h3 id="q3-findings">The findings</h3>
+<h3>The findings</h3>
 
 <p><strong>Revenue is heavily concentrated.</strong> The top 10% of customers hold 47.90% of kept revenue, the top 20% hold 66.22%, and the top half account for 90.68%. This is close to a classic Pareto distribution and it changes how the business should be managed: retaining the top tier matters disproportionately, and account management would have something real to target.</p>
 
@@ -417,17 +428,17 @@ ORDER BY categories_bought;
 
 <p><em>Caveat worth stating: lifespan is measured as the gap between first and last order, so a customer with more orders will mechanically show a wider span. The relationship is real but partly definitional.</em></p>
 
-<h3 id="q3-dashboard">The dashboard</h3>
+<h3>The dashboard</h3>
 
 <p><img src="images/customer_behaviour.jpg" alt="Customer Behaviour dashboard"></p>
 
 <p>The cumulative curve on the left is the headline, with reference lines marking the top 10% and 20% thresholds so the concentration can be read rather than inferred from the curve's shape. The two paired charts show breadth and lifespan, each with customer counts above and the behavioural measure below, so the inverse relationship between how many customers sit in a band and how they behave is visible at a glance.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="question-4">Business question 4: Operations and quality</h2>
+<h2>Business question 4: Operations and quality</h2>
 
 <blockquote>
   <p><em>"What is discounting costing us, where are returns concentrated, and how are customers paying?"</em></p>
@@ -435,14 +446,15 @@ ORDER BY categories_bought;
 
 <p><strong>Script:</strong> 06_Operations_Quality.sql</p>
 
-<h3 id="q4-sql">The SQL</h3>
+<h3>The SQL</h3>
 
 <p>The cost of discounting is not stored anywhere. It has to be derived as the gap between what an order would have been worth at full price and what it actually earned:</p>
 
-<pre><code>SELECT
+```sql
+SELECT
     CASE
         WHEN discount_pct = 0 THEN 'No Discount'
-        WHEN discount_pct &lt; 11 THEN 'Between 1%-10%'
+        WHEN discount_pct < 11 THEN 'Between 1%-10%'
         ELSE 'Between 11%-20%'
     END AS discount_band,
     COUNT(*) AS order_count,
@@ -452,13 +464,14 @@ ORDER BY categories_bought;
 FROM sales_final
 GROUP BY discount_band
 ORDER BY discount_given DESC;
-</code></pre>
+```
 
 <p>price * units is the undiscounted value, already present on every row, so no join or subquery is needed. Note that CASE stops at the first match, which is what makes the three bands mutually exclusive despite the conditions overlapping as written.</p>
 
 <p>The payment mix needs each year's four methods to sum to 100%, which requires a windowed aggregate inside a grouped query:</p>
 
-<pre><code>SELECT
+```sql
+SELECT
     YEAR(order_date) AS order_year,
     payment_method,
     COUNT(*) AS payment_count,
@@ -466,11 +479,11 @@ ORDER BY discount_given DESC;
 FROM sales_final
 GROUP BY payment_method, order_year
 ORDER BY payment_method, order_year;
-</code></pre>
+```
 
 <p>SUM(COUNT(*)) OVER (PARTITION BY ...) looks odd but is standard: the COUNT runs first as part of the GROUP BY, then the window function sums those counts within each year.</p>
 
-<h3 id="q4-findings">The findings</h3>
+<h3>The findings</h3>
 
 <p><strong>Discounting cost $173,982 over the period, 6.4% of the $2.70M pre-discount value.</strong> Most orders carry no discount at all: 10,949 of 19,542, or 56%.</p>
 
@@ -482,17 +495,17 @@ ORDER BY payment_method, order_year;
 
 <p><strong>The payment mix has shifted substantially.</strong> Cash fell from 25.63% of orders in 2022 to 7.92% in 2025, losing roughly two thirds of its share, while UPI rose from 14.27% to 35.45%. The two cross over during 2023. Card declined gently from 44.79% to 39.86% and Wallet held steady around 15 to 17%, so the shift is specifically a migration from cash to UPI rather than a broad realignment.</p>
 
-<h3 id="q4-dashboard">The dashboard</h3>
+<h3>The dashboard</h3>
 
 <p><img src="images/operations_quality.jpg" alt="Operations Quality dashboard"></p>
 
 <p>The product loss ranking runs across the top, coloured by category so the Electronics concentration is immediately visible. Below it, the category chart carries both absolute loss and loss rate on each bar, the discount chart shows order counts alongside cost so the depth-versus-breadth point reads directly off the chart, and the payment mix uses a line chart because the crossing of Cash and UPI is the finding.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="question-5">Business question 5: Product rankings</h2>
+<h2>Business question 5: Product rankings</h2>
 
 <blockquote>
   <p><em>"Which products lead, and does price determine performance?"</em></p>
@@ -500,11 +513,12 @@ ORDER BY payment_method, order_year;
 
 <p><strong>Script:</strong> 07_Product_Rankings.sql</p>
 
-<h3 id="q5-sql">The SQL</h3>
+<h3>The SQL</h3>
 
 <p>Top N within each group is the canonical window function problem, and it cannot be done with GROUP BY alone. RANK() with PARTITION BY restarts the ranking for each category:</p>
 
-<pre><code>WITH top AS (
+```sql
+WITH top AS (
     SELECT
         category,
         product_name,
@@ -521,9 +535,9 @@ ranked AS (
 )
 SELECT *
 FROM ranked
-WHERE rnk &lt; 4
+WHERE rnk < 4
 ORDER BY category, rnk;
-</code></pre>
+```
 
 <p>Three window functions in one query, all partitioned by category: one ranks, one totals, and the third expresses each product as a share of its category.</p>
 
@@ -531,7 +545,8 @@ ORDER BY category, rnk;
 
 <p>The price comparison introduces a frameless window, AVG(...) OVER (), which computes the grand mean and attaches it to every row without collapsing them:</p>
 
-<pre><code>WITH product_prices AS (
+```sql
+WITH product_prices AS (
     SELECT
         product_name, category,
         ROUND(AVG(price), 2) AS avg_price,
@@ -543,15 +558,15 @@ SELECT
     product_name, category, avg_price,
     ROUND(AVG(avg_price) OVER (), 2) AS overall_avg_price,
     CASE
-        WHEN avg_price &gt;= AVG(avg_price) OVER () THEN 'Above average'
+        WHEN avg_price >= AVG(avg_price) OVER () THEN 'Above average'
         ELSE 'Below average'
     END AS price_position,
     total_revenue
 FROM product_prices
 ORDER BY avg_price DESC;
-</code></pre>
+```
 
-<h3 id="q5-findings">The findings</h3>
+<h3>The findings</h3>
 
 <p><strong>Every category is dominated by its top three,</strong> which account for 65% to 76% of category revenue. Furniture is the flattest, with Bookshelf at 23.88% and Office Chair at 23.15% almost level. Electronics is the most top-heavy, with Headphones alone at 33.13%.</p>
 
@@ -561,19 +576,19 @@ ORDER BY avg_price DESC;
 
 <p><strong>Price position is a poor predictor of revenue.</strong> Nine of 25 products sit above the overall average price of $51.10, but several below-average products out-earn above-average ones. Jeans ($119,350) beats Jacket ($102,648), and Desk Lamp at $36.95 earns $112,865, more than Bluetooth Speaker at nearly twice the price. Price sets the tier a product can reach; demand decides where within it the product lands.</p>
 
-<h3 id="q5-dashboard">The dashboard</h3>
+<h3>The dashboard</h3>
 
 <p><img src="images/product_rankings.jpg" alt="Product Rankings dashboard"></p>
 
 <p>The top-three-by-category chart groups products under their category so the within-group ranking is readable at a glance. The scatter plot is the right form for the price question because it shows two measures against each other, with a computed reference line at the $51.10 average splitting the catalogue and colour marking which side each product falls on. The visible overlap between the two colour groups is the finding.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="techniques">Techniques used</h2>
+<h2>Techniques used</h2>
 
-<h3 id="sql-techniques">SQL</h3>
+<h3>SQL</h3>
 
 <table>
   <thead>
@@ -599,15 +614,15 @@ ORDER BY avg_price DESC;
   </tbody>
 </table>
 
-<h3 id="tableau-techniques">Tableau</h3>
+<h3>Tableau</h3>
 
 <p>Level of detail expressions (FIXED), table calculations with secondary calculations, RANK() and LOOKUP() calculated fields, dual-axis charts, computed and constant reference lines and bands, annotations, and five multi-sheet dashboards.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="reproduce">How to reproduce</h2>
+<h2>How to reproduce</h2>
 
 <ol>
   <li>Clone the repository and create a MySQL schema.</li>
@@ -618,11 +633,11 @@ ORDER BY avg_price DESC;
   <li>For the dashboards, export sales_final to CSV and connect Tableau to the file, or connect Tableau directly to the MySQL database.</li>
 </ol>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
 
 <hr>
 
-<h2 id="limitations">Limitations</h2>
+<h2>Limitations</h2>
 
 <p>The dataset is <strong>synthetic</strong>, generated using Claude (Anthropic) to my specification. It was built to exhibit realistic retail patterns so that the analysis has genuine structure to find, but it is not real transaction data and no conclusion here describes an actual business.</p>
 
@@ -630,4 +645,4 @@ ORDER BY avg_price DESC;
 
 <p>Where a pattern appeared that the data could not support, the findings say so rather than claiming it. Several comparisons in this project are reported as non-findings for that reason.</p>
 
-<p><a href="#top">Back to top</a></p>
+<p><a href="#retail-sales-analysis-sql-to-dashboard">Back to top</a></p>
