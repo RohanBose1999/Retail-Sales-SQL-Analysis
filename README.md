@@ -96,12 +96,13 @@
 ├── 05_Customer_Behaviour.sql
 ├── 06_Operations_Quality.sql
 ├── 07_Product_Rankings.sql
+├── Retail Sales Analysis.twbx              # Tableau workbook, all five dashboards
 └── images/
-    ├── revenue_overview.png
-    ├── trends_over_time.png
-    ├── customer_behaviour.png
-    ├── operations_quality.png
-    └── product_rankings.png
+    ├── revenue_overview.jpg
+    ├── trends_over_time.jpg
+    ├── customer_behaviour.jpg
+    ├── operations_quality.jpg
+    └── product_rankings.jpg
 </code></pre>
 
 <p><a href="#top">Back to top</a></p>
@@ -274,7 +275,7 @@ ORDER BY kept_revenue DESC;
 
 <h3 id="q1-dashboard">The dashboard</h3>
 
-<p><img src="images/revenue_overview.png" alt="Revenue Overview dashboard"></p>
+<p><img src="images/revenue_overview.jpg" alt="Revenue Overview dashboard"></p>
 
 <p>The KPI strip gives the headline figures. The three bar charts break revenue down by region, category and segment, with colour carrying a second measure in each case: return rate for categories, order count for regions, average order value for segments. The product ranking at left is coloured by category, which makes the volume-versus-value story visible without a word of explanation, since Grocery items scatter through the middle of the list rather than clustering at the bottom.</p>
 
@@ -338,7 +339,7 @@ ORDER BY month_number;
 
 <h3 id="q2-dashboard">The dashboard</h3>
 
-<p><img src="images/trends_over_time.png" alt="Trends Over Time dashboard"></p>
+<p><img src="images/trends_over_time.jpg" alt="Trends Over Time dashboard"></p>
 
 <p>The monthly line across all 48 months is the centrepiece, with the April to August 2023 slump shaded and annotated so the event is marked rather than left for the reader to spot. The yearly chart below shows the V-shape of the dip and recovery with growth percentages attached, and the seasonality chart holds months in calendar order so the shape of the year is visible rather than a ranking.</p>
 
@@ -418,7 +419,7 @@ ORDER BY categories_bought;
 
 <h3 id="q3-dashboard">The dashboard</h3>
 
-<p><img src="images/customer_behaviour.png" alt="Customer Behaviour dashboard"></p>
+<p><img src="images/customer_behaviour.jpg" alt="Customer Behaviour dashboard"></p>
 
 <p>The cumulative curve on the left is the headline, with reference lines marking the top 10% and 20% thresholds so the concentration can be read rather than inferred from the curve's shape. The two paired charts show breadth and lifespan, each with customer counts above and the behavioural measure below, so the inverse relationship between how many customers sit in a band and how they behave is visible at a glance.</p>
 
@@ -483,7 +484,7 @@ ORDER BY payment_method, order_year;
 
 <h3 id="q4-dashboard">The dashboard</h3>
 
-<p><img src="images/operations_quality.png" alt="Operations Quality dashboard"></p>
+<p><img src="images/operations_quality.jpg" alt="Operations Quality dashboard"></p>
 
 <p>The product loss ranking runs across the top, coloured by category so the Electronics concentration is immediately visible. Below it, the category chart carries both absolute loss and loss rate on each bar, the discount chart shows order counts alongside cost so the depth-versus-breadth point reads directly off the chart, and the payment mix uses a line chart because the crossing of Cash and UPI is the finding.</p>
 
@@ -562,7 +563,7 @@ ORDER BY avg_price DESC;
 
 <h3 id="q5-dashboard">The dashboard</h3>
 
-<p><img src="images/product_rankings.png" alt="Product Rankings dashboard"></p>
+<p><img src="images/product_rankings.jpg" alt="Product Rankings dashboard"></p>
 
 <p>The top-three-by-category chart groups products under their category so the within-group ranking is readable at a glance. The scatter plot is the right form for the price question because it shows two measures against each other, with a computed reference line at the $51.10 average splitting the catalogue and colour marking which side each product falls on. The visible overlap between the two colour groups is the finding.</p>
 
